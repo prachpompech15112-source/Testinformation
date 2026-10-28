@@ -28,6 +28,10 @@ h3{margin:0 0 8px;font-size:15px}
 table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid var(--bd);padding:5px 8px;text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}.tw{overflow-x:auto;max-height:340px}
 .note{font-size:13px;padding:4px 0}
+.tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:6px}
+.tb{border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
+.tb .l{font-size:12px;color:var(--mut)}.tb .v{font-size:26px;font-weight:700}
+.gt{font-size:13px;font-weight:600;margin:12px 0 0}
 </style>
 </head>
 <body>
@@ -53,6 +57,7 @@ th:first-child,td:first-child{text-align:left}.tw{overflow-x:auto;max-height:340
     <button id="clr">ล้างช่วงวันที่</button>
   </div>
   <div class="grid kpis" id="kpis"></div>
+  <div class="card" id="today" style="margin-bottom:14px"></div>
   <div class="card"><h3>หม้อแปลงเข้า vs เทสแล้ว รายวัน (แยก Fast / Normal)</h3>
     <div class="sub">แท่งซ้าย = เข้า (Fast + Normal + ตรวจสอบ) • แท่งขวา = เทสแล้ว (Fast + Normal)</div>
     <div class="ch" style="height:380px"><canvas id="c1"></canvas></div></div>
@@ -141,6 +146,22 @@ function render(){
   const D=ALL.filter(r=>(!f||r.iso>=f)&&(!t||r.iso<=t));
   const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const inAll=sum(D,'inF')+sum(D,'inN')+sum(D,'inC'), doneAll=sum(D,'doneF')+sum(D,'doneN');
+  // การ์ดข้อมูลวันนี้ (ไม่ขึ้นกับตัวกรองช่วงวันที่)
+  {const n=new Date(),p2=x=>String(x).padStart(2,'0');
+   const tIso=n.getFullYear()+'-'+p2(n.getMonth()+1)+'-'+p2(n.getDate());
+   let T=ALL.find(r=>r.iso===tIso),fb=false;
+   if(!T&&ALL.length){T=ALL[ALL.length-1];fb=true}
+   const th=iso=>new Date(iso+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'});
+   if(!T){$('today').innerHTML='<h3>📅 หม้อแปลงวันนี้</h3><div class="sub">ยังไม่มีข้อมูล</div>'}
+   else{
+     const b=(l,v,c)=>`<div class="tb"><div class="l">${l}</div><div class="v"${c?` style="color:var(${c})"`:''}>${v}</div></div>`;
+     $('today').innerHTML=`<h3>📅 ${fb?'ข้อมูลล่าสุด':'หม้อแปลงวันนี้'} — ${th(T.iso)}</h3>`+
+       (fb?`<div class="sub">ยังไม่มีข้อมูลของวันนี้ (${th(tIso)}) จึงแสดงวันล่าสุดที่มีข้อมูล</div>`:'')+
+       `<div class="gt">เข้า</div><div class="tg">${b('Fast',T.inF,'--fastD')}${b('Normal (PO, ผชฟ.)',T.inN,'--normD')}${b('ตรวจสอบ',T.inC,'--gray')}${b('รวมเข้า',T.inF+T.inN+T.inC)}</div>`+
+       `<div class="gt">เทสแล้ว</div><div class="tg">${b('Fast',T.doneF,'--fastD')}${b('Normal (PO, ผชฟ.)',T.doneN,'--normD')}${b('รวมเทสแล้ว',T.doneF+T.doneN,'--done')}</div>`+
+       `<div class="gt">คงค้าง</div><div class="tg">${b('ในวัน',T.backDay,'--pea')}${b('ทั้งหมด',T.backAll===null?'-':T.backAll,'--pea')}</div>`+
+       (T.note?`<div class="note" style="margin-top:10px"><b>หมายเหตุ:</b> ${T.note.replace(/</g,'&lt;')}</div>`:'');
+   }}
   const last=[...D].reverse().find(r=>r.backAll!==null);
   $('kpis').innerHTML=[
     ['หม้อแปลงเข้าทั้งหมด',inAll,'Fast + Normal + ตรวจสอบ','--normD'],
