@@ -32,6 +32,9 @@ th:first-child,td:first-child{text-align:left}.tw{overflow-x:auto;max-height:340
 .tb{border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
 .tb .l{font-size:12px;color:var(--mut)}.tb .v{font-size:26px;font-weight:700}
 .gt{font-size:13px;font-weight:600;margin:12px 0 0}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:12px 0 4px;font-size:13px}
+.lg div{display:flex;align-items:center;gap:7px}
+.lg i{width:14px;height:14px;border-radius:3px;display:inline-block;flex:none}
 </style>
 </head>
 <body>
@@ -68,6 +71,11 @@ th:first-child,td:first-child{text-align:left}.tw{overflow-x:auto;max-height:340
   </div>
   <div class="card"><h3>หม้อแปลงเข้า vs เทสแล้ว รายวัน (แยก Fast / Normal)</h3>
     <div class="sub">แท่งซ้าย = เข้า (Fast + Normal + ตรวจสอบ) • แท่งขวา = เทสแล้ว (Fast + Normal)</div>
+    <div class="lg">
+      <div><i style="background:var(--fastD)"></i>เข้า · Fast</div><div><i style="background:var(--fastL)"></i>เทสแล้ว · Fast</div>
+      <div><i style="background:var(--normD)"></i>เข้า · Normal</div><div><i style="background:var(--normL)"></i>เทสแล้ว · Normal</div>
+      <div><i style="background:var(--gray)"></i>เข้า · ตรวจสอบ</div><div></div>
+    </div>
     <div class="ch" style="height:380px"><canvas id="c1"></canvas></div></div>
   <div class="grid two">
     <div class="card"><h3>Fast: เข้า vs เทสแล้ว</h3><div class="ch"><canvas id="c2"></canvas></div></div>
@@ -182,7 +190,7 @@ function render(){
   const tx=cs('--tx'),bd=cs('--bd'),L=D.map(r=>r.label);
   const mk=(id,cfg,stacked)=>{if(charts[id])charts[id].destroy();
     cfg.options={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{labels:{color:tx,font:{family:'Sarabun'}}}},
+      plugins:{legend:{display:id!=='c1',labels:{color:tx,font:{family:'Sarabun'}}}},
       scales:{x:{stacked,ticks:{color:tx},grid:{color:bd}},y:{stacked,beginAtZero:true,ticks:{color:tx,precision:0},grid:{color:bd}}}};
     charts[id]=new Chart($(id),cfg)};
   const ds=(label,key,color,stack)=>({label,data:D.map(r=>r[key]),backgroundColor:cs(color),stack});
