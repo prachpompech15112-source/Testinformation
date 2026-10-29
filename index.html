@@ -195,14 +195,21 @@ function render(){
   mk('c4',{type:'bar',data:{labels:B.map(r=>r.label),datasets:[{label:'คงค้างทั้งหมด',data:B.map(r=>r.backAll),backgroundColor:cs('--pea')}]}},false);
   if(charts.c0){charts.c0.destroy();delete charts.c0}
   if(T){
-    const valLbl={id:'valLbl',afterDatasetsDraw(c){const x=c.ctx;x.save();x.fillStyle=tx;x.font='600 13px Sarabun';x.textAlign='left';x.textBaseline='middle';
-      c.data.datasets.forEach((d,i)=>c.getDatasetMeta(i).data.forEach((b,j)=>{const v=d.data[j];if(v===null||v===undefined)return;x.fillText(v,b.x+6,b.y)}));x.restore()}};
-    charts.c0=new Chart($('c0'),{type:'bar',plugins:[valLbl],data:{labels:[['Fast'],['Normal','(PO, ผชฟ.)'],['ตรวจสอบ']],datasets:[
+    const GL=[['Fast'],['Normal','(PO, ผชฟ.)'],['ตรวจสอบ']];
+    const w=$('c0').parentElement.clientWidth||320, padL=Math.round(Math.min(110,Math.max(84,w*0.27)));
+    // วาดตัวเลขปลายแท่ง + ชื่อกลุ่มชิดซ้าย (เลี่ยงปัญหาข้อความไทยชิดขวาบนมือถือ)
+    const lblPlug={id:'lblPlug',afterDatasetsDraw(c){const x=c.ctx;x.save();x.fillStyle=tx;x.textBaseline='middle';
+      x.font='600 13px Sarabun';x.textAlign='left';
+      c.data.datasets.forEach((d,i)=>c.getDatasetMeta(i).data.forEach((b,j)=>{const v=d.data[j];if(v===null||v===undefined)return;x.fillText(v,b.x+6,b.y)}));
+      x.font='13px Sarabun';
+      GL.forEach((ls,j)=>{const mid=c.scales.y.getPixelForValue(j),st=mid-(ls.length-1)*8;ls.forEach((t,k)=>x.fillText(t,2,st+k*16))});
+      x.restore()}};
+    charts.c0=new Chart($('c0'),{type:'bar',plugins:[lblPlug],data:{labels:['Fast','Normal','ตรวจสอบ'],datasets:[
       {label:'เข้า',data:[T.inF,T.inN,T.inC],backgroundColor:[cs('--fastD'),cs('--normD'),cs('--gray')]},
       {label:'เทสแล้ว',data:[T.doneF,T.doneN,null],backgroundColor:[cs('--fastL'),cs('--normL'),cs('--gray')]}]},
-      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:36}},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{left:padL,right:36}},
         plugins:{legend:{display:false}},
-        scales:{x:{beginAtZero:true,grace:'5%',ticks:{color:tx,precision:0},grid:{color:bd}},y:{ticks:{color:tx,font:{size:13},padding:8},grid:{display:false},afterFit(sc){sc.width=Math.min(110,Math.max(80,sc.chart.width*0.27))}}}}});
+        scales:{x:{beginAtZero:true,grace:'5%',ticks:{color:tx,precision:0},grid:{color:bd}},y:{ticks:{display:false},grid:{display:false},border:{display:false}}}}});
   }
   const N=D.filter(r=>r.note);
   $('notes').innerHTML=N.length?N.map(r=>`<div class="note"><b>${r.label}</b> — ${r.note.replace(/</g,'&lt;')}</div>`).join(''):'<div class="sub">ไม่มีหมายเหตุ</div>';
