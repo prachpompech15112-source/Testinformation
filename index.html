@@ -88,6 +88,7 @@ const DEFAULT_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq
 const C={date:0,bookF:1,bookN:2,inF:3,inN:4,inC:5,doneF:7,doneN:8,backDay:10,backAll:11,note:12};
 const $=id=>document.getElementById(id);
 let ALL=[],charts={},timer=null;
+Chart.defaults.font.family="Sarabun, sans-serif";
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 
 function parseCSV(t){const rows=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];
@@ -196,12 +197,12 @@ function render(){
   if(T){
     const valLbl={id:'valLbl',afterDatasetsDraw(c){const x=c.ctx;x.save();x.fillStyle=tx;x.font='600 13px Sarabun';x.textAlign='left';x.textBaseline='middle';
       c.data.datasets.forEach((d,i)=>c.getDatasetMeta(i).data.forEach((b,j)=>{const v=d.data[j];if(v===null||v===undefined)return;x.fillText(v,b.x+6,b.y)}));x.restore()}};
-    charts.c0=new Chart($('c0'),{type:'bar',plugins:[valLbl],data:{labels:['Fast','Normal (PO, ผชฟ.)','ตรวจสอบ'],datasets:[
+    charts.c0=new Chart($('c0'),{type:'bar',plugins:[valLbl],data:{labels:[['Fast'],['Normal','(PO, ผชฟ.)'],['ตรวจสอบ']],datasets:[
       {label:'เข้า',data:[T.inF,T.inN,T.inC],backgroundColor:[cs('--fastD'),cs('--normD'),cs('--gray')]},
       {label:'เทสแล้ว',data:[T.doneF,T.doneN,null],backgroundColor:[cs('--fastL'),cs('--normL'),cs('--gray')]}]},
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:36}},
         plugins:{legend:{display:false}},
-        scales:{x:{beginAtZero:true,grace:'5%',ticks:{color:tx,precision:0},grid:{color:bd}},y:{ticks:{color:tx},grid:{display:false}}}}});
+        scales:{x:{beginAtZero:true,grace:'5%',ticks:{color:tx,precision:0},grid:{color:bd}},y:{ticks:{color:tx,font:{size:13},padding:8},grid:{display:false},afterFit(sc){sc.width=Math.min(110,Math.max(80,sc.chart.width*0.27))}}}}});
   }
   const N=D.filter(r=>r.note);
   $('notes').innerHTML=N.length?N.map(r=>`<div class="note"><b>${r.label}</b> — ${r.note.replace(/</g,'&lt;')}</div>`).join(''):'<div class="sub">ไม่มีหมายเหตุ</div>';
@@ -216,6 +217,7 @@ $('file').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(ingest)};
 $('auto').onchange=e=>{clearInterval(timer);if(e.target.checked)timer=setInterval(load,300000)};
 $('url').value=store.get('sheetUrl')||'';
 load();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(ALL.length)render()});
 </script>
 </body>
 </html>
